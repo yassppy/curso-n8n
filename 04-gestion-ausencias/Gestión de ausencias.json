@@ -1,0 +1,857 @@
+{
+  "name": "Gestión de ausencias",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Solicitud de vacaciones",
+        "formDescription": "Aquí vas a solicitar tus vacaciones por días libres.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nombre completo",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Correo Electronico",
+              "fieldType": "email",
+              "placeholder": "Debe ser de la empresa: prueba@empresa.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Fecha Inicio",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Fecha de retorno",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Comentarios",
+              "fieldType": "textarea",
+              "placeholder": "Comentario opcional de la solicitud"
+            }
+          ]
+        },
+        "options": {
+          "respondWithOptions": {
+            "values": {}
+          },
+          "customCss": ":root {\n  --font-family: 'Open Sans', sans-serif;\n  --font-weight-normal: 400;\n  --font-weight-bold: 600;\n  --font-size-body: 12px;\n  --font-size-label: 14px;\n  --font-size-test-notice: 12px;\n  --font-size-input: 14px;\n  --font-size-header: 20px;\n  --font-size-paragraph: 14px;\n  --font-size-link: 12px;\n  --font-size-error: 12px;\n  --font-size-html-h1: 28px;\n  --font-size-html-h2: 20px;\n  --font-size-html-h3: 16px;\n  --font-size-html-h4: 14px;\n  --font-size-html-h5: 12px;\n  --font-size-html-h6: 10px;\n  --font-size-subheader: 14px;\n\n  /* Colors — Paleta Corporativa Azul */\n  --color-background: #F4F7FC;\n  --color-test-notice-text: #3B6D11;\n  --color-test-notice-bg: #EAF3DE;\n  --color-test-notice-border: #C0DD97;\n  --color-card-bg: #FFFFFF;\n  --color-card-border: #C8D6EC;\n  --color-card-shadow: rgba(24, 95, 165, 0.07);\n  --color-link: #378ADD;\n  --color-header: #0C447C;\n  --color-label: #185FA5;\n  --color-input-border: #B5D4F4;\n  --color-input-text: #0C447C;\n  --color-focus-border: #378ADD;\n  --color-submit-btn-bg: #185FA5;\n  --color-submit-btn-text: #FFFFFF;\n  --color-error: #A32D2D;\n  --color-required: #3B6D11;\n  --color-clear-button-bg: #378ADD;\n  --color-html-text: #0"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -544,
+        -192
+      ],
+      "id": "30efe31e-4d26-42b7-ae38-9dbd7b0bf248",
+      "name": "Nueva solicitud de vacaciones",
+      "webhookId": "7d25c6ca-18b3-4053-9507-196093e423e2"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"email\": \"{{ $json['Correo Electronico'] }}\",\n  \"fullName\": \"{{ $json['Nombre completo'] }}\",\n  \"strarDate\": \"{{ $json['Fecha Inicio'] }}\",\n  \"endDate\": \"{{ $json['Fecha de retorno'] }}\",\n  \"comments\": \"{{ $json.Comentarios }}\",\n  \"daysRequested\": {{ \n  (\n  $json['Fecha de retorno'].toDateTime()\n  -\n  $json['Fecha Inicio'].toDateTime()\n  )\n  /\n  ( 1000 * 60 * 60 * 24)\n}}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        -192
+      ],
+      "id": "9ae653a7-52f1-4d4a-9c4d-40338404f129",
+      "name": "extraer variables"
+    },
+    {
+      "parameters": {
+        "content": "## Validaciones",
+        "height": 704,
+        "width": 2128,
+        "color": "#B63535"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -432
+      ],
+      "id": "3d9d2761-9009-4eb7-9bac-edff949df659",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"ok\": false,\n  \"message\": \"Se debe solicitar con 7 días de antelación\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -32
+      ],
+      "id": "3338369a-b62e-41b0-8681-5e8b59166f13",
+      "name": "Añadir error menos tiempo de solicitud"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "55163489-e716-43b3-a9f6-c63eb405a2e1",
+              "leftValue": "={{ $json.strarDate.toDateTime() }}",
+              "rightValue": "={{ $now.plus(7, 'days') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "beforeOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        -192
+      ],
+      "id": "dfd7c718-45f0-465c-901b-2479021d68bb",
+      "name": "¿La fecha de solicitud debe ser mayor de 7 días?"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('extraer variables').item.json.email }}",
+        "subject": "Rechazo de solicitud",
+        "message": "=<h1>Mande la solicitud de nuevo</h1>\n<p>{{ $json.message }}</p>\n<p>Cordialmente: RRHH</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1104,
+        512
+      ],
+      "id": "3923e85f-aa27-4d27-9023-fca408580cc0",
+      "name": "Enviar rechazo de solicitud",
+      "webhookId": "03b0d8e1-0b55-472c-96c2-4a6f282479b1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zXeLvlLA7v8JY4rw",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "668bbee8-da28-44b0-82fa-5aa8fd3e0bef",
+              "leftValue": "={{ $json.daysRequested }}",
+              "rightValue": "={{0}}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        272,
+        -272
+      ],
+      "id": "3d8cd166-5f75-40b3-8182-3d8f21ce127b",
+      "name": "¿Los días deben ser mayores a 0?"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"ok\": false,\n  \"message\": \"La fecha de inicio debe ser menor a la fehca de retorno\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "4b1c4d8a-3d35-4bfc-a6e4-21504f1ecda8",
+      "name": "Añadir mensaje de error"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"ok\": false,\n  \"message\": \"No tiene suficientes dias libres, debe contar con más de 7 días\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        -32
+      ],
+      "id": "2105eba1-2e35-4d59-83b0-5ec9662bff52",
+      "name": "Añadir mensaje de solicitud correcta"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "days_off",
+          "mode": "list",
+          "cachedResultName": "days_off"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "email",
+              "value": "={{ $json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        496,
+        -288
+      ],
+      "id": "8d046d2d-3da8-4c39-901d-820ec7b38475",
+      "name": "Obtener días libres",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ZXsVgFUINpVCPTbo",
+          "name": "Postgres neon.tech n8n-gestion-ausencia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2da32465-315a-453d-80ed-c9d8700157b1",
+              "leftValue": "={{ $json.vacation_days }}",
+              "rightValue": "={{ $('¿La fecha de solicitud debe ser mayor de 7 días?').item.json.daysRequested }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        -288
+      ],
+      "id": "6f757eb7-f2fe-4f0d-a913-55339a72ef82",
+      "name": "¿Tienes suficientes vacaciones?"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=## Solicitud nueva:\n- Empleado: {{ $('extraer variables').item.json.fullName }}\n- Correo: {{ $('extraer variables').item.json.email }}\n\n- Fecha de inicio: {{ $('extraer variables').item.json.strarDate }}\n- Fecha de retorno: {{ $('extraer variables').item.json.endDate }}\n\n### Comentarios:\n- {{ $('extraer variables').item.json.comments }}\n\n## Aprobar o rechazar\nPara continuar: [ingresar al link]({{ $execution.resumeFormUrl }})",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -688
+      ],
+      "id": "8977b707-e4d8-4397-a827-04a8f3d0153f",
+      "name": "Enviar mensaje a RRHH",
+      "webhookId": "1fa5cc15-63b2-4ca6-ad21-285d9840516b",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "EA55dHzN7ELaky9E",
+          "name": "Discord Webhook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## RRHH",
+        "height": 256,
+        "width": 816,
+        "color": "#596732"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -752
+      ],
+      "id": "7409cf78-a242-4d2d-a13d-dd7a68fbcb95",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "resume": "form",
+        "formTitle": "Aprobar tiempo libre",
+        "formDescription": "=<p>El empleado: {{ $('extraer variables').item.json.fullName }}</p>\n\n<p>\nSolicita: {{ $('extraer variables').item.json.strarDate }} hasta el {{ $('extraer variables').item.json.endDate }}\n</p>\n",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "¿Aprobar o rechazar?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Aprobar"
+                  },
+                  {
+                    "option": "Rechazar"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Motivo"
+            }
+          ]
+        },
+        "limitWaitTime": true,
+        "resumeAmount": 2,
+        "resumeUnit": "days",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        -688
+      ],
+      "id": "37b28529-a5cc-47c0-bce8-d0b1379118f3",
+      "name": "Esperar respuesta de RRHH",
+      "webhookId": "94982e6a-8705-4bae-a0d1-27fec53d8c84"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c63e9992-9b1e-470a-8fd1-734980d1e59c",
+              "leftValue": "={{ $json['¿Aprobar o rechazar?'] }}",
+              "rightValue": "Aprobar",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1456,
+        -272
+      ],
+      "id": "9bb21e97-3627-44f6-8848-ee526e959768",
+      "name": "¿RRHH aprueba la solicitud?"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"ok\": false,\n  \"message\": \"{{ $json.Motivo }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1504,
+        32
+      ],
+      "id": "78294c35-bff7-486b-904f-eb8855fd5d08",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('extraer variables').item.json.email }}",
+        "subject": "Rechazo de solicitud",
+        "message": "=<h1>Nueva solicitud enviada</h1>\n<p>{{ $('¿RRHH aprueba la solicitud?').item.json.Motivo }}</p>\n<p>Cordialmente: RRHH</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        512
+      ],
+      "id": "5b17a0fa-5589-403b-98a4-7b73c4cac37a",
+      "name": "Enviar mensaje de rechazo",
+      "webhookId": "03b0d8e1-0b55-472c-96c2-4a6f282479b1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zXeLvlLA7v8JY4rw",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Correo",
+        "height": 256,
+        "width": 816,
+        "color": "#2A5B2D"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        432
+      ],
+      "id": "748cc070-63f2-4b63-9ff1-1435db9e855b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "653a04c76dd55f554440d9924132d6dc3178698badb373362b85bf26fd8ef5e2@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Tiempo libre de empleados"
+        },
+        "start": "={{ $('extraer variables').item.json.strarDate }}",
+        "end": "={{ $('extraer variables').item.json.endDate }}",
+        "additionalFields": {
+          "summary": "=Vacaciones de {{ $('extraer variables').item.json.fullName }}\n\nTiempo solicitado: {{ $('extraer variables').item.json.daysRequested }} días."
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        2032,
+        -288
+      ],
+      "id": "8b1e49b1-5760-41ef-af20-e678158ff36b",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "PssEaC68suIK1ao5",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Calendario",
+        "height": 480,
+        "width": 960,
+        "color": "#914803"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        -432
+      ],
+      "id": "994062ef-fb4f-4f63-99b7-b440b8462cb7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "days_off",
+          "mode": "list",
+          "cachedResultName": "days_off"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Obtener días libres').item.json.id }}",
+            "vacation_days": "={{ $('Obtener días libres').item.json.vacation_days - $('extraer variables').item.json.daysRequested}}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "vacation_days",
+              "displayName": "vacation_days",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sick_days",
+              "displayName": "sick_days",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2256,
+        -288
+      ],
+      "id": "ded435f5-6bc7-4934-b7f8-d1b0478113ed",
+      "name": "Restar días de vacaciones",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ZXsVgFUINpVCPTbo",
+          "name": "Postgres neon.tech n8n-gestion-ausencia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('extraer variables').item.json.email }}",
+        "subject": "Aprobación de solicitud de vacaciones",
+        "message": "=<h1>RRHH aprobo la solicitud</h1>\n\n<p>Qué disfrutes de tu tiempo libre:</p>\n\n<p>{{ $('extraer variables').item.json.strarDate }} hasta {{ $('extraer variables').item.json.endDate }}</p>\n\n<p>Cordialmente RRHH</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2480,
+        -208
+      ],
+      "id": "27ff6ceb-559a-461d-958e-eac3c8840c8c",
+      "name": "Send a message",
+      "webhookId": "24be5d49-2526-49b5-8b15-b45cf8e0c9a8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zXeLvlLA7v8JY4rw",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Nueva solicitud de vacaciones": [
+      {
+        "json": {
+          "Nombre completo": "Miguel Mallqui",
+          "Correo Electronico": "miguemallquidiaz@gmail.com",
+          "Fecha Inicio": "2026-04-03",
+          "Fecha de retorno": "2026-04-11",
+          "Comentarios": "",
+          "submittedAt": "2026-03-29T21:10:01.731-05:00",
+          "formMode": "test"
+        }
+      }
+    ],
+    "Esperar respuesta de RRHH": [
+      {
+        "json": {
+          "¿Aprobar o rechazar?": "Aprobar",
+          "Motivo": "",
+          "submittedAt": "2026-03-31T01:28:28.230Z",
+          "formMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Nueva solicitud de vacaciones": {
+      "main": [
+        [
+          {
+            "node": "extraer variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extraer variables": {
+      "main": [
+        [
+          {
+            "node": "¿La fecha de solicitud debe ser mayor de 7 días?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿La fecha de solicitud debe ser mayor de 7 días?": {
+      "main": [
+        [
+          {
+            "node": "¿Los días deben ser mayores a 0?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Añadir error menos tiempo de solicitud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Añadir error menos tiempo de solicitud": {
+      "main": [
+        [
+          {
+            "node": "Enviar rechazo de solicitud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Los días deben ser mayores a 0?": {
+      "main": [
+        [
+          {
+            "node": "Obtener días libres",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Añadir mensaje de error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Añadir mensaje de error": {
+      "main": [
+        [
+          {
+            "node": "Enviar rechazo de solicitud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Añadir mensaje de solicitud correcta": {
+      "main": [
+        [
+          {
+            "node": "Enviar rechazo de solicitud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener días libres": {
+      "main": [
+        [
+          {
+            "node": "¿Tienes suficientes vacaciones?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Tienes suficientes vacaciones?": {
+      "main": [
+        [
+          {
+            "node": "Enviar mensaje a RRHH",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Añadir mensaje de solicitud correcta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensaje a RRHH": {
+      "main": [
+        [
+          {
+            "node": "Esperar respuesta de RRHH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar respuesta de RRHH": {
+      "main": [
+        [
+          {
+            "node": "¿RRHH aprueba la solicitud?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿RRHH aprueba la solicitud?": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Enviar mensaje de rechazo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Restar días de vacaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restar días de vacaciones": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f50f7192-cf3d-43e4-ab78-943109317f5b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f9d859cd584e280ed920ce73954292f77c98cbb26b61a9263fea990e2471f4b0"
+  },
+  "id": "v8qbx5kDc3ErDLZN",
+  "tags": []
+}
