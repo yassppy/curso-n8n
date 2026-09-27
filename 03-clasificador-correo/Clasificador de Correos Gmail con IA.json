@@ -1,0 +1,263 @@
+{
+  "name": "Clasificador de Correos Gmail con IA",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "readStatus": "unread"
+        }
+      },
+      "id": "4757055a-768d-4552-8778-14246366dd35",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        304
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5FjqdY6ELSx8ewkk",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "=Asunto: {{ $json.Subject }}\nDe: {{ $json.From }}\nContenido: {{ $json.snippet }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Portal de empleo",
+              "description": "Correos de portales de empleo, ofertas de trabajo, procesos de selección, reclutadores."
+            },
+            {
+              "category": "Facturas",
+              "description": "Facturas, recibos, comprobantes de pago, cobros, estados de cuenta."
+            },
+            {
+              "category": "Personal",
+              "description": "Correos personales de amigos, familiares o conocidos."
+            },
+            {
+              "category": "Otros",
+              "description": "Cualquier correo que no encaje en las categorías anteriores."
+            }
+          ]
+        },
+        "options": {
+          "fallback": "discard"
+        }
+      },
+      "id": "841554bd-45cd-41fd-9f82-1391985dad60",
+      "name": "Clasificar Correo",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "a87cc064-f565-49c0-8e7b-41b954ca89d0",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        528
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "Gateway credits",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_672526799498541684"
+        ]
+      },
+      "id": "3492f0e4-08c3-4aba-b84f-c7038355658a",
+      "name": "Etiquetar Portal de empleo",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        0
+      ],
+      "webhookId": "8e0c777e-4585-4627-89fd-cfa2f8ef31ea",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5FjqdY6ELSx8ewkk",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_8647964521076735157"
+        ]
+      },
+      "id": "567be283-64b8-4677-ab74-79992c640b32",
+      "name": "Etiquetar Facturas",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        192
+      ],
+      "webhookId": "24159970-45bc-49d6-99df-f46ad4f8c6c2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5FjqdY6ELSx8ewkk",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_5794465789719299070"
+        ]
+      },
+      "id": "5cb91574-6f41-4270-87f7-31fcc8b7b2bf",
+      "name": "Etiquetar Personal",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        384
+      ],
+      "webhookId": "c072f692-50a3-49aa-b4c1-567e703063d0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5FjqdY6ELSx8ewkk",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_8240351853999498993"
+        ]
+      },
+      "id": "718b0901-5eb3-4f88-8c40-cc3a8e40e3e9",
+      "name": "Etiquetar Otros",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        576
+      ],
+      "webhookId": "f961292a-2748-4e16-a445-86e3ba0c2fd6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5FjqdY6ELSx8ewkk",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Clasificar Correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar Correo": {
+      "main": [
+        [
+          {
+            "node": "Etiquetar Portal de empleo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Etiquetar Facturas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Etiquetar Personal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Etiquetar Otros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clasificar Correo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "fd18855c-2942-418b-9926-bb84e5977e41",
+  "meta": {
+    "instanceId": "4c7d2cd7c5345b9560ab4a411c20367bdb312b5d5043df2e7c00eba1eef3ee39"
+  },
+  "nodeGroups": [],
+  "id": "j3maodlrtF8335TP",
+  "tags": []
+}
